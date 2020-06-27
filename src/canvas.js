@@ -11,7 +11,7 @@ export default class Canvas {
     this.element = element;
     this.particles = [];
     this.generator = generator;
-    this.paused = false;
+    this.paused = true;
     this.observer = null;
 
     this.options = Object.assign({}, defaults, options);
