@@ -1,26 +1,30 @@
 /**
  * Class to manage a canvas of particles
  */
+const defaults = {
+  number: 200,
+  densityArea: 800,
+  resize: "repaint", // repaint | increment
+};
 export default class Canvas {
-  constructor(element, generator) {
+  constructor(element, generator, options = {}) {
     this.element = element;
     this.particles = [];
     this.generator = generator;
     this.paused = false;
     this.observer = null;
 
-    this.options = {
-      number: 200,
-      densityArea: 800,
-      resize: "increment", // repaint | increment
-    };
+    this.options = Object.assign({}, defaults, options);
   }
 
   start() {
     this.initCanvas();
     this.createParticles();
-    this.initResize();
     this.play();
+
+    if (this.options.resize) {
+      this.initResize();
+    }
   }
 
   initCanvas() {

@@ -48,7 +48,14 @@ const generator = new Generator()
 
 //The canvas where the particles will be drawn
 const element = document.querySelector('#canvas');
-const canvas = new Canvas(element, generator);
+
+//Options to configure the number of particles, density, etc
+const options = {
+  number: 150,
+  densityArea: 400
+};
+
+const canvas = new Canvas(element, generator, options);
 
 //Start the animation
 canvas.start();
