@@ -1,0 +1,25 @@
+{
+  "name": "@oom/particles",
+  "version": "0.1.0",
+  "description": "Generate particles",
+  "browser": "src/canvas.js",
+  "modules.root": "src",
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oom-components/particles.git"
+  },
+  "keywords": [
+    "particles",
+    "canvas",
+    "es6"
+  ],
+  "author": "Oscar Otero <oom@oscarotero.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oom-components/particles/issues"
+  },
+  "homepage": "https://github.com/oom-components/particles#readme"
+}
