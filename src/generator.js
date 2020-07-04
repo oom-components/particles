@@ -20,7 +20,7 @@ const shapes = {
   },
 };
 
-export default class Generator {
+export class Generator {
   constructor() {
     this.properties = {
       color: "#fff",
@@ -33,6 +33,11 @@ export default class Generator {
       shadowBlur: undefined,
     };
     this.animate = {};
+  }
+
+  shape(shape) {
+    this.properties.shape = shape;
+    return this;
   }
 
   color(color) {
@@ -94,6 +99,9 @@ export default class Generator {
   createParticle(canvas) {
     const pxratio = canvas.pxratio;
     const properties = {
+      shape: Array.isArray(this.properties.shape)
+        ? getRandom(this.properties.shape)
+        : this.properties.shape,
       color: val(this.properties.color),
       strokeColor: val(this.properties.strokeColor),
       shadowColor: val(this.properties.shadowColor),
@@ -101,7 +109,6 @@ export default class Generator {
       shadowBlur: val(this.properties.shadowBlur, random),
       shadowX: val(this.properties.shadowX, random) * pxratio,
       shadowY: val(this.properties.shadowY, random) * pxratio,
-      shape: val(this.properties.shape),
       opacity: val(this.properties.opacity, random),
       size: val(this.properties.size, random) * pxratio,
     };
@@ -149,7 +156,7 @@ function val(value, generate) {
   }
 
   if (Array.isArray(value)) {
-    return val(value[Math.floor(Math.random() * value.length)]);
+    return val(getRandom(value));
   }
 
   if (typeof value === "function") {
@@ -161,6 +168,10 @@ function val(value, generate) {
   }
 
   return value;
+}
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function random(value) {
@@ -216,4 +227,15 @@ function anim(value, config, pxratio = 1) {
   }
 
   return anim;
+}
+
+export class GeneratorMultiple {
+  constructor(...generators) {
+    this.generators = generators;
+  }
+
+  createParticle(canvas) {
+    const generator = getRandom(this.generators);
+    return generator.createParticle(canvas);
+  }
 }
