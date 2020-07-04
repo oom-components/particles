@@ -30,19 +30,16 @@ const generator = new Generator()
   .color('#ff0033')
   .position({
     speed: 2,
-    sync: [true, false],
-    direction: ['right'],
+    sync: true,
+    direction: 'right',
     outMode: 'bounce',
   })
   .size(10, {
     speed: 1,
-    vs: 1,
-    sync: false,
     to: 5,
   })
   .opacity(1, {
     speed: 0.5,
-    sync: false,
     to: 0,
   })
   .strokeColor('blue')
