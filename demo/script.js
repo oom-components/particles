@@ -9,8 +9,9 @@ const generator = new Generator()
     outMode: "out",
     straight: true,
   })
-  .size({ min: 1, max: 2 })
-  .opacity({ min: 0.1, max: 0.9 });
+  .size({ min: 1, max: 5 })
+  .opacity({ min: 0.1, max: 0.9 })
+  .shadowBlur([10, 0, 5]);
 
 const particles = new Canvas(document.querySelector("#particles"), generator);
 

@@ -27,12 +27,50 @@ export default class Generator {
       shape: "circle",
       opacity: 1,
       size: 10,
+      strokeColor: undefined,
+      strokeWidth: undefined,
+      shadowColor: undefined,
+      shadowBlur: undefined,
     };
     this.animate = {};
   }
 
   color(color) {
     this.properties.color = color;
+    return this;
+  }
+
+  strokeColor(color) {
+    this.properties.strokeColor = color;
+    return this;
+  }
+
+  shadowColor(color) {
+    this.properties.shadowColor = color;
+    return this;
+  }
+
+  strokeWidth(width, animate) {
+    this.properties.strokeWidth = width;
+    this.animate.strokeWidth = animate;
+    return this;
+  }
+
+  shadowBlur(blur, animate) {
+    this.properties.shadowBlur = blur;
+    this.animate.shadowBlur = animate;
+    return this;
+  }
+
+  shadowX(offset, animate) {
+    this.properties.shadowX = offset;
+    this.animate.shadowX = animate;
+    return this;
+  }
+
+  shadowY(offset, animate) {
+    this.properties.shadowY = offset;
+    this.animate.shadowY = animate;
     return this;
   }
 
@@ -56,48 +94,56 @@ export default class Generator {
   createParticle(canvas) {
     const pxratio = canvas.pxratio;
     const properties = {
-      color: getColor(this.properties.color),
+      color: val(this.properties.color),
+      strokeColor: val(this.properties.strokeColor),
+      shadowColor: val(this.properties.shadowColor),
+      strokeWidth: val(this.properties.strokeWidth, random) * pxratio,
+      shadowBlur: val(this.properties.shadowBlur, random),
+      shadowX: val(this.properties.shadowX, random) * pxratio,
+      shadowY: val(this.properties.shadowY, random) * pxratio,
       shape: val(this.properties.shape),
-      opacity: val(this.properties.opacity, randomFloat),
-      size: val(this.properties.size, randomInteger) * pxratio,
+      opacity: val(this.properties.opacity, random),
+      size: val(this.properties.size, random) * pxratio,
     };
 
     if (typeof properties.shape === "string") {
       properties.shape = shapes[properties.shape];
     }
 
-    properties.x = randomInteger(
-      { min: properties.size * 2, max: canvas.width - properties.size * 2 },
+    properties.x = random(
+      {
+        min: properties.size * 2,
+        max: canvas.width - properties.size * 2,
+        round: true,
+      },
     );
-    properties.y = randomInteger(
-      { min: properties.size * 2, max: canvas.height - properties.size * 2 },
+    properties.y = random(
+      {
+        min: properties.size * 2,
+        max: canvas.height - properties.size * 2,
+        round: true,
+      },
     );
 
     const animate = {
-      opacity: animOpacity(properties.opacity, this.animate.opacity),
-      size: animSize(properties.size, this.animate.size, pxratio),
+      opacity: anim(properties.opacity, this.animate.opacity),
+      size: anim(properties.size, this.animate.size, pxratio),
       position: animPosition(this.animate.position),
+      strokeWidth: anim(
+        properties.strokeWidth,
+        this.animate.strokeWidth,
+        pxratio,
+      ),
+      shadowBlur: anim(properties.shadowBlur, this.animate.shadowBlur),
+      shadowX: anim(properties.shadowX, this.animate.shadowX, pxratio),
+      shadowY: anim(properties.shadowY, this.animate.shadowY, pxratio),
     };
 
     return new Particle(properties, animate, canvas);
   }
 }
 
-function hexToRgb(hex) {
-  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-  return result
-    ? [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16),
-    ]
-    : null;
-}
-
-function val(value, def) {
+function val(value, generate) {
   if (value === undefined) {
     return null;
   }
@@ -111,41 +157,18 @@ function val(value, def) {
   }
 
   if (typeof value === "object" && ("max" in value || "min" in value)) {
-    return def(value);
+    return generate(value);
   }
 
   return value;
 }
 
-function getColor(value) {
-  const color = val(value, randomColor);
-
-  if (color === "random") {
-    return randomColor();
-  }
-
-  return typeof color === "string" ? hexToRgb(color) : color;
-}
-
-function randomColor() {
-  const minmax = { min: 0, max: 255 };
-
-  return [
-    randomInteger(minmax),
-    randomInteger(minmax),
-    randomInteger(minmax),
-  ];
-}
-
-function randomFloat(value) {
+function random(value) {
   const max = value.max || 1;
   const min = value.min || 0;
+  const val = Math.round((Math.random() * (max - min) + min) * 100) / 100;
 
-  return Math.round((Math.random() * (max - min) + min) * 100) / 100;
-}
-
-function randomInteger(value) {
-  return Math.round(randomFloat(value));
+  return val.round ? Math.round(val) : val;
 }
 
 function animPosition(position) {
@@ -172,7 +195,7 @@ function animPosition(position) {
   return anim;
 }
 
-function animSize(size, config, pxratio) {
+function anim(value, config, pxratio = 1) {
   if (!config) {
     return null;
   }
@@ -184,35 +207,11 @@ function animSize(size, config, pxratio) {
     anim.speed *= Math.random();
   }
 
-  if (config.to < size) {
-    anim.max = size;
+  if (config.to < value) {
+    anim.max = value;
     anim.min = config.to;
   } else {
-    anim.min = size;
-    anim.max = config.to;
-  }
-
-  return anim;
-}
-
-function animOpacity(opacity, config) {
-  if (!config) {
-    return null;
-  }
-
-  const anim = {
-    speed: val(config.speed) / 100,
-  };
-
-  if (!val(config.sync)) {
-    anim.speed *= Math.random();
-  }
-
-  if (config.to < opacity) {
-    anim.max = opacity;
-    anim.min = config.to;
-  } else {
-    anim.min = opacity;
+    anim.min = value;
     anim.max = config.to;
   }
 

@@ -25,7 +25,7 @@ npm install @oom/particles
 import Generator from './vendors/@oom/particles/src/generator.js';
 import Canvas from './vendors/@oom/particles/src/canvas.js';
 
-//The particles generator. You can configure the position, size, color and opacity
+//The particles generator:
 const generator = new Generator()
   .color('#ff0033')
   .position({
@@ -34,16 +34,21 @@ const generator = new Generator()
     direction: ['right'],
     outMode: 'bounce',
   })
-  .size({ min: 10, max: 50}, {
+  .size(10, {
     speed: 1,
     vs: 1,
     sync: false,
     to: 5,
   })
-  .opacity({min: 0.1, max: 0.9}, {
+  .opacity(1, {
     speed: 0.5,
     sync: false,
     to: 0,
+  })
+  .strokeColor('blue')
+  .strokeWidth(3, {
+    speed: 0.5,
+    to: 1,
   });
 
 //The canvas where the particles will be drawn
@@ -65,6 +70,33 @@ canvas.pause();
 
 //Resume the animation
 canvas.play();
+```
+
+### Random values
+
+There's many ways to generate random values for color, opacity, size etc:
+
+```js
+const generator = new Generator();
+
+//Use an array with the available values:
+generator.color(["#333", "blue", "white", "rgb(234,111,0)"]);
+
+//Use an object to generate random values with a min and max value:
+generator.opacity({
+  min: 0.1,
+  max: 0.8,
+});
+
+//To generate integer values:
+generator.size({
+  min: 2,
+  max: 20,
+  round: true
+});
+
+//You can also pass a function that returns the value
+generator.opacity(() => Math.random());
 ```
 
 ## Demo

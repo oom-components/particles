@@ -8,23 +8,25 @@ export default class Particle {
     this.color = properties.color;
     this.opacity = properties.opacity;
     this.shape = properties.shape;
+    this.strokeColor = properties.strokeColor;
+    this.strokeWidth = properties.strokeWidth;
+    this.shadowColor = properties.shadowColor;
+    this.shadowBlur = properties.shadowBlur;
+    this.shadowX = properties.shadowX;
+    this.shadowY = properties.shadowY;
 
     this.animate = animate;
     this.canvas = canvas;
   }
 
   update() {
-    if (this.animate.position) {
-      this.updatePosition();
-    }
-
-    if (this.animate.size) {
-      this.updateProperty("size");
-    }
-
-    if (this.animate.opacity) {
-      this.updateProperty("opacity");
-    }
+    Object.keys(this.animate).forEach((prop) => {
+      if (prop === "position") {
+        this.updatePosition();
+      } else {
+        this.updateProperty(prop);
+      }
+    });
   }
 
   updatePosition() {
@@ -42,6 +44,10 @@ export default class Particle {
 
   updateProperty(name) {
     const animate = this.animate[name];
+
+    if (!animate) {
+      return;
+    }
 
     if (animate.grow) {
       if (this[name] >= animate.max) {
@@ -107,14 +113,23 @@ export default class Particle {
   }
 
   draw() {
-    this.canvas.context.fillStyle = getColor(this.color, this.opacity);
+    this.canvas.context.fillStyle = this.color;
+    this.canvas.context.globalAlpha = this.opacity;
+
+    if (this.shadowBlur || this.shadowX || this.shadowY) {
+      this.canvas.context.shadowColor = this.shadowColor || this.color;
+      this.canvas.context.shadowBlur = this.shadowBlur || 0;
+      this.canvas.context.shadowOffsetX = this.shadowX || 0;
+      this.canvas.context.shadowOffsetY = this.shadowY || 0;
+    }
+
     this.shape(this.canvas.context, this);
     this.canvas.context.fill();
-  }
-}
 
-function getColor(color, opacity) {
-  return color
-    ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${opacity})`
-    : undefined;
+    if (this.strokeWidth) {
+      this.canvas.context.strokeStyle = this.strokeColor || this.color;
+      this.canvas.context.lineWidth = this.strokeWidth;
+      this.canvas.context.stroke();
+    }
+  }
 }
